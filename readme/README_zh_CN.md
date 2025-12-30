@@ -2,10 +2,9 @@
 
 <h2 align="center">easyclimate 的 Rust 后端</h2>
 
-![PyPI - 版本](https://img.shields.io/pypi/v/easyclimate-backend)
-![PyPI - Python版本](https://img.shields.io/pypi/pyversions/easyclimate-backend)
-![PyPI - 下载量](https://img.shields.io/pypi/dm/easyclimate-backend)
-[![文档状态](https://readthedocs.org/projects/easyclimate-backend/badge/?version=latest)](https://easyclimate-backend.readthedocs.io/en/latest/?badge=latest)
+![PyPI - Version](https://img.shields.io/pypi/v/easyclimate-rust)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyclimate-rust)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/easyclimate-rust)
 
 <div align="center">
 <center><a href = "../README.md">English</a> / 简体中文 / <a href = "README_ja_JP.md">日本語</a></center>

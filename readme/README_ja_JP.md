@@ -2,18 +2,11 @@
 
 <h2 align="center">easyclimate の Rust バックエンド</h2>
 
-<p align="center">
-<a href="https://easyclimate-backend.readthedocs.io/en/latest/"><strong>ドキュメント</strong> (最新版)</a> •
-<a href="https://easyclimate-backend.readthedocs.io/en/main/"><strong>ドキュメント</strong> (mainブランチ)</a> •
-<a href="https://shenyulu.github.io/easyclimate-backend/"><strong>ドキュメント</strong> (開発版)</a> •
-<a href="https://shenyulu.github.io/easyclimate-backend/src/contributing.html"><strong>コントリビューション</strong></a>
-</p>
 
+![PyPI - Version](https://img.shields.io/pypi/v/easyclimate-rust)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyclimate-rust)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/easyclimate-rust)
 
-![PyPI - バージョン](https://img.shields.io/pypi/v/easyclimate-backend)
-![PyPI - Pythonバージョン](https://img.shields.io/pypi/pyversions/easyclimate-backend)
-![PyPI - ダウンロード数](https://img.shields.io/pypi/dm/easyclimate-backend)
-[![ドキュメント状態](https://readthedocs.org/projects/easyclimate-backend/badge/?version=latest)](https://easyclimate-backend.readthedocs.io/en/latest/?badge=latest)
 
 <div align="center">
 <center><a href = "../README.md">English</a> / <a href = "README_zh_CN.md">简体中文</a> / 日本語</center>
