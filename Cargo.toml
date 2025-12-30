@@ -1,0 +1,48 @@
+[package]
+name = "easyclimate_rust"
+version = "2026.1.0"
+edition = "2024"
+
+[lib]
+name = "easyclimate_rust"
+# "cdylib" is used to create dynamic libraries that can be imported by Python.
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.27.1", features = ["extension-module", "multiple-pymethods"] }
+rayon = "1.11.0"
+numpy = "0.27.0"
+
+[profile.release]
+opt-level = 3
+lto = true           # Link-Time Optimization
+codegen-units = 1    # Better optimization, slower compile
+panic = "abort"         # Smaller binary size
+strip = true            # Strip symbols from binary
+
+# Enable CPU-specific optimizations
+# Uncomment the target that matches your deployment environment:
+
+# For maximum compatibility (default)
+# [profile.release]
+# No additional flags needed
+
+# For modern x86-64 CPUs (recommended for performance)
+[target.'cfg(target_arch = "x86_64")'.dependencies]
+
+[profile.release.package."*"]
+opt-level = 3
+
+# Optional: Add target-cpu optimization in .cargo/config.toml:
+# [build]
+# rustflags = ["-C", "target-cpu=native"]
+# This enables SIMD and other CPU-specific optimizations
+
+[dev-dependencies]
+criterion = "0.5"
+
+# Optional: Benchmarks
+[[bench]]
+name = "detrend_bench"
+harness = false
+path = "benches/detrend_bench.rs"

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[project]
+name = "easyclimate_rust"
+license = {file = "LICENSE"}
+description = "The rust backend of easyclimate"
+authors = [
+    {name = "shenyulu"},
+]
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+classifiers = [
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+    'Programming Language :: Python :: 3 :: Only',
+    'Topic :: Scientific/Engineering',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.urls]
+homepage = "https://github.com/shenyulu/easyclimate-rust"
+documentation = "https://github.com/shenyulu/easyclimate-rust"
+source = "https://github.com/shenyulu/easyclimate-rust"
+download = "https://pypi.org/project/easyclimate-rust/#files"
+tracker = "https://github.com/shenyulu/easyclimate-rust/issues"
+
+[tool.maturin]
+version = { source = "Cargo.toml" }
+python-source = "python"
+module-name = "easyclimate_rust._easyclimate_rust"
