@@ -1,4 +1,4 @@
-<img src="./docs/logo/easyclimate_rust_logo_mini.png?raw=true" alt="easyclimate-rust">
+<img src="https://github.com/shenyulu/easyclimate-rust/blob/main/docs/logo/easyclimate_rust_logo_mini.png?raw=true" alt="easyclimate-rust">
 
 <h2 align="center">The Rust backend of easyclimate</h2>
 
