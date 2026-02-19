@@ -28,6 +28,13 @@ fn easyclimate_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(interp1d::interp1d_linear_3d_py, m)?)?;
     m.add_function(wrap_pyfunction!(interp1d::interp1d_linear_4d_py, m)?)?;
 
+    // fastbarnes
+    m.add_function(wrap_pyfunction!(barnes::barnes, m)?)?;
+    m.add_function(wrap_pyfunction!(barnes::radius_mask_2d, m)?)?;
+
+    // fastbarnes S2
+    m.add_function(wrap_pyfunction!(barnes_s2::barnes_s2, m)?)?;
+
     Ok(())
 }
 
@@ -36,3 +43,6 @@ mod wet_bulb;
 mod sphere_laplacian;
 mod detrend_spatial;
 mod interp1d;
+mod barnes;
+mod lambert;
+mod barnes_s2;

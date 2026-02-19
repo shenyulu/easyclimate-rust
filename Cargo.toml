@@ -1,6 +1,6 @@
 [package]
 name = "easyclimate_rust"
-version = "2026.1.0"
+version = "2026.3.0"
 edition = "2024"
 
 [lib]
@@ -12,6 +12,7 @@ crate-type = ["cdylib"]
 pyo3 = { version = "0.27.1", features = ["extension-module", "multiple-pymethods"] }
 rayon = "1.11.0"
 numpy = "0.27.0"
+ndarray = "0.17.1"
 
 [profile.release]
 opt-level = 3
