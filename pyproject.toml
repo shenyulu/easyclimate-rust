@@ -40,3 +40,11 @@ tracker = "https://github.com/shenyulu/easyclimate-rust/issues"
 version = { source = "Cargo.toml" }
 python-source = "python"
 module-name = "easyclimate_rust._easyclimate_rust"
+
+exclude = [
+  "**/*.pyd",
+  "**/*.so",
+  "**/*.dll",
+  "**/__pycache__/**",
+  "**/*.pyc",
+]
