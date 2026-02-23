@@ -6,8 +6,10 @@ $pythonVersions = @("3.10", "3.11", "3.12", "3.13", "3.14")
 function Clean-BuildArtifacts {
     Write-Host "🧹 Cleaning old build artifacts..." -ForegroundColor Yellow
     
-    # 清理 python 包目录下的 .pyd 和 .so 文件
-    Get-ChildItem -Path "python" -Recurse -Include "*.pyd", "*.so" | Remove-Item -Force
+    # 清理 python 包目录下的 .pyd, .so, .dll 文件
+    Get-ChildItem -Path "." -Recurse -Include "*.pyd", "*.so", "*.dll" |
+        Where-Object { $_.FullName -notmatch "\\target\\" } |
+        Remove-Item -Force -ErrorAction SilentlyContinue
 
     if (Test-Path "python\__pycache__") {
         Remove-Item -Path "python\__pycache__" -Recurse -Force
@@ -16,10 +18,6 @@ function Clean-BuildArtifacts {
     # 清理 target/maturin 目录
     if (Test-Path "target/maturin") {
         Remove-Item -Path "target/maturin" -Recurse -Force
-    }
-
-    if (Test-Path "target/release") {
-        Remove-Item -Path "target/release/easyclimate_rust.dll" -Recurse -Force
     }
 
     # 清理 .venv 目录
