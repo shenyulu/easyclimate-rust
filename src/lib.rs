@@ -35,6 +35,11 @@ fn easyclimate_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // fastbarnes S2
     m.add_function(wrap_pyfunction!(barnes_s2::barnes_s2, m)?)?;
 
+    //vibeta
+    m.add_function(wrap_pyfunction!(vibeta::dvibeta, m)?)?;
+    m.add_function(wrap_pyfunction!(vibeta::dvibeta_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(vibeta::dvibeta_batch_sum_norm, m)?)?;
+
     Ok(())
 }
 
@@ -46,3 +51,4 @@ mod interp1d;
 mod barnes;
 mod lambert;
 mod barnes_s2;
+mod vibeta;
