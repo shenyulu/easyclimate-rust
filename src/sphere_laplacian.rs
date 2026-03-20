@@ -1,8 +1,8 @@
+use numpy::{PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use rayon::prelude::*;
 use std::f64::consts::PI;
-use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
-use numpy::{PyReadonlyArray1, PyReadonlyArray2, PyArray2};
 
 /// Spherical Laplacian calculation
 pub struct SphereLaplacian {
@@ -19,7 +19,7 @@ impl SphereLaplacian {
     // }
 
     /// Core computing functions - Using flat array (compatible with NumPy)
-    /// 
+    ///
     /// # Arguments
     /// * `t_flat` - Flat-lying temperature field [nlat * nlon]
     /// * `lat` - Latitude array (degrees) [nlat]
@@ -147,8 +147,8 @@ impl SphereLaplacian {
 
                         // 拉普拉斯算子
                         // Laplace operator
-                        row[i] = (d2t_dlambda2 / cos_phi_sq + d2t_dphi2 
-                            - tan_phi_j * dt_dphi) / r_sq;
+                        row[i] =
+                            (d2t_dlambda2 / cos_phi_sq + d2t_dphi2 - tan_phi_j * dt_dphi) / r_sq;
                     }
                 }
             });
@@ -215,14 +215,13 @@ impl SphereLaplacian {
 
                         // 经度方向贡献
                         // Longitude direction contribution
-                        let lambda_contrib = cos_phi_j * (t_east - t_center) 
-                            - cos_phi_j * (t_center - t_west);
-                        let lambda_term = lambda_contrib 
-                            / (cos_phi_j * dlambda_sq * r_sq);
+                        let lambda_contrib =
+                            cos_phi_j * (t_east - t_center) - cos_phi_j * (t_center - t_west);
+                        let lambda_term = lambda_contrib / (cos_phi_j * dlambda_sq * r_sq);
 
                         // 纬度方向贡献
                         // Latitude direction contribution
-                        let phi_contrib = cos_phi_half_plus * (t_north - t_center) 
+                        let phi_contrib = cos_phi_half_plus * (t_north - t_center)
                             - cos_phi_half_minus * (t_center - t_south);
                         let phi_term = phi_contrib / (cos_phi_j * dphi_sq * r_sq);
 
@@ -265,7 +264,7 @@ pub fn calc_sphere_laplacian_numpy<'py>(
         .chunks(nlon)
         .map(|chunk| chunk.to_vec())
         .collect();
-    
+
     let result_array = PyArray2::from_vec2(py, &result_vec2d)
         .map_err(|e| PyValueError::new_err(format!("创建数组失败: {}", e)))?;
 

@@ -6,7 +6,7 @@ fn add(left: u64, right: u64) -> u64 {
 }
 
 #[pymodule]
-#[pyo3(name="_easyclimate_rust")]
+#[pyo3(name = "_easyclimate_rust")]
 fn easyclimate_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(add, m)?)?;
 
@@ -14,13 +14,28 @@ fn easyclimate_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(wet_bulb::calc_wet_bulb_temperature, m)?)?;
 
     // sphere_laplacian module (NumPy interface)
-    m.add_function(wrap_pyfunction!(sphere_laplacian::calc_sphere_laplacian_numpy, m)?)?;
-    m.add_function(wrap_pyfunction!(sphere_laplacian::calc_sphere_laplacian_conservative_numpy, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        sphere_laplacian::calc_sphere_laplacian_numpy,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        sphere_laplacian::calc_sphere_laplacian_conservative_numpy,
+        m
+    )?)?;
 
     // detrend_spatial module - high-performance spatial detrending
-    m.add_function(wrap_pyfunction!(detrend_spatial::calc_detrend_spatial_3d, m)?)?;
-    m.add_function(wrap_pyfunction!(detrend_spatial::calc_detrend_spatial_3d_chunked, m)?)?;
-    m.add_function(wrap_pyfunction!(detrend_spatial::calc_detrend_spatial_flexible, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        detrend_spatial::calc_detrend_spatial_3d,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        detrend_spatial::calc_detrend_spatial_3d_chunked,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        detrend_spatial::calc_detrend_spatial_flexible,
+        m
+    )?)?;
 
     // interp1d
     m.add_function(wrap_pyfunction!(interp1d::interp1d_linear_core, m)?)?;
@@ -35,14 +50,27 @@ fn easyclimate_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // fastbarnes S2
     m.add_function(wrap_pyfunction!(barnes_s2::barnes_s2, m)?)?;
 
+    //vibeta
+    m.add_function(wrap_pyfunction!(vibeta::dvibeta, m)?)?;
+    m.add_function(wrap_pyfunction!(vibeta::dvibeta_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(vibeta::dvibeta_batch_sum_norm, m)?)?;
+
+    //rvdv
+    m.add_function(wrap_pyfunction!(rvdv::dvrfidf, m)?)?;
+    m.add_function(wrap_pyfunction!(rvdv::ddvfidf, m)?)?;
+    m.add_function(wrap_pyfunction!(rvdv::ddvfidf_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(rvdv::dvrfidf_batch, m)?)?;
+
     Ok(())
 }
 
 // Declare module
-mod wet_bulb;
-mod sphere_laplacian;
+mod barnes;
+mod barnes_s2;
 mod detrend_spatial;
 mod interp1d;
-mod barnes;
 mod lambert;
-mod barnes_s2;
+mod rvdv;
+mod sphere_laplacian;
+mod vibeta;
+mod wet_bulb;

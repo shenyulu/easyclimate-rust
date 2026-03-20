@@ -1,5 +1,5 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::PyRuntimeError;
+use pyo3::prelude::*;
 
 // Calculate saturated vapor pressure
 fn e_s(t_c: f64) -> f64 {
@@ -43,12 +43,14 @@ pub fn wet_bulb_temperature(
     while delta_t > tolerance && iter < max_iter {
         let f_val = f(t_guess, t_dry, rh, p, a);
         let df_val = df_dt(t_guess, t_dry, rh, p, a);
-        
+
         // Avoid zero division errors
         if df_val.abs() < f64::EPSILON {
-            return Err("If the derivative value is too small, it may lead to unstable numerical results.");
+            return Err(
+                "If the derivative value is too small, it may lead to unstable numerical results.",
+            );
         }
-        
+
         let t_new = t_guess - f_val / df_val;
         delta_t = (t_new - t_guess).abs();
         t_guess = t_new;
