@@ -9,7 +9,7 @@ name = "easyclimate_rust"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.28"
+pyo3 = { version = "0.28", features = ["extension-module"] }
 rayon = "1.11"
 numpy = "0.28"
 ndarray = "0.17"

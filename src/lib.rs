@@ -40,6 +40,12 @@ fn easyclimate_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(vibeta::dvibeta_batch, m)?)?;
     m.add_function(wrap_pyfunction!(vibeta::dvibeta_batch_sum_norm, m)?)?;
 
+    //rvdv
+    m.add_function(wrap_pyfunction!(rvdv::dvrfidf, m)?)?;
+    m.add_function(wrap_pyfunction!(rvdv::ddvfidf, m)?)?;
+    m.add_function(wrap_pyfunction!(rvdv::ddvfidf_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(rvdv::dvrfidf_batch, m)?)?;
+
     Ok(())
 }
 
@@ -52,3 +58,4 @@ mod barnes;
 mod lambert;
 mod barnes_s2;
 mod vibeta;
+mod rvdv;
