@@ -1,6 +1,6 @@
 use numpy::{
-    PyArray1, PyArrayDyn, PyReadonlyArray1, PyReadonlyArrayDyn,
-    PyArrayMethods, PyUntypedArrayMethods,
+    PyArray1, PyArrayDyn, PyArrayMethods, PyReadonlyArray1, PyReadonlyArrayDyn,
+    PyUntypedArrayMethods,
 };
 use pyo3::prelude::*;
 use rayon::prelude::*;
@@ -75,8 +75,8 @@ pub fn dvibeta_batch(
         .map_err(|_| pyo3::exceptions::PyTypeError::new_err("psfc must be C-contiguous"))?;
 
     // shape() needs PyUntypedArrayMethods in scope
-    let x_shape = x.shape().to_vec();       // Vec<usize>
-    let ps_shape = psfc.shape().to_vec();   // Vec<usize>
+    let x_shape = x.shape().to_vec(); // Vec<usize>
+    let ps_shape = psfc.shape().to_vec(); // Vec<usize>
 
     if x_shape.is_empty() {
         return Err(pyo3::exceptions::PyValueError::new_err(
@@ -145,8 +145,8 @@ pub fn dvibeta_batch(
                 };
 
                 // IMPORTANT: detach x_in from ws to satisfy borrow checker
-                let xbuf = ws.prof;            // copy [f64; KLVL]
-                let x_in = &xbuf[..nlev];      // slice into local copy
+                let xbuf = ws.prof; // copy [f64; KLVL]
+                let x_in = &xbuf[..nlev]; // slice into local copy
 
                 dvibeta_core_ws(
                     p,
@@ -174,14 +174,10 @@ pub fn dvibeta_batch(
     // ---- create numpy outputs ----
     // numpy 0.27: use PyArray1::from_vec, then reshape to dyn
     let out_1d = PyArray1::<f64>::from_vec(py, out);
-    let out_dyn = out_1d
-        .reshape(ps_shape.clone())?
-        .to_owned();
+    let out_dyn = out_1d.reshape(ps_shape.clone())?.to_owned();
 
     let ier_1d = PyArray1::<i32>::from_vec(py, ier_out);
-    let ier_dyn = ier_1d
-        .reshape(ps_shape)?
-        .to_owned();
+    let ier_dyn = ier_1d.reshape(ps_shape)?.to_owned();
 
     Ok((out_dyn.into(), ier_dyn.into()))
 }
@@ -560,7 +556,11 @@ pub fn dvibeta_batch_sum_norm(
     xmsg: f64,
     linlog: i32,
     ptop: f64,
-) -> PyResult<(Py<PyArrayDyn<f64>>, Py<PyArrayDyn<f64>>, Py<PyArrayDyn<i32>>)> {
+) -> PyResult<(
+    Py<PyArrayDyn<f64>>,
+    Py<PyArrayDyn<f64>>,
+    Py<PyArrayDyn<i32>>,
+)> {
     let p = p.as_slice()?;
     let nlev = p.len();
     if nlev == 0 {
@@ -644,7 +644,7 @@ pub fn dvibeta_batch_sum_norm(
                 };
 
                 // detach from ws to satisfy borrow checker
-                let xbuf = ws.prof;               // copy [f64; KLVL]
+                let xbuf = ws.prof; // copy [f64; KLVL]
                 let x_in = &xbuf[..nlev];
 
                 let s_res = dvibeta_core_ws(
@@ -655,15 +655,15 @@ pub fn dvibeta_batch_sum_norm(
                     linlog,
                     ps,
                     xsfc,
-                    ps,    // pbot
+                    ps, // pbot
                     ptop,
-                    ptop,  // plvcrt
+                    ptop, // plvcrt
                     &mut *ws,
                 );
 
                 // ---- normalization profile = constant 1 (same as ones_like) ----
                 // xsfc for ones is 1
-                let onesbuf = ws.ones;            // copy [f64; KLVL]
+                let onesbuf = ws.ones; // copy [f64; KLVL]
                 let ones_in = &onesbuf[..nlev];
 
                 let n_res = dvibeta_core_ws(
@@ -673,10 +673,10 @@ pub fn dvibeta_batch_sum_norm(
                     xmsg,
                     linlog,
                     ps,
-                    1.0,   // xsfc
-                    ps,    // pbot
+                    1.0, // xsfc
+                    ps,  // pbot
                     ptop,
-                    ptop,  // plvcrt
+                    ptop, // plvcrt
                     &mut *ws,
                 );
 

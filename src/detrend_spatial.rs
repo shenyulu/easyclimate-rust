@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use rayon::prelude::*;
 
 /// Detrend data along the time axis for 3D array (time, lat, lon)
-/// 
+///
 /// This function removes linear trends from spatial-temporal data with special value handling.
 /// Uses parallel processing and optimized algorithms for maximum performance.
 ///
@@ -77,7 +77,7 @@ pub fn calc_detrend_spatial_3d<'py>(
 }
 
 /// Optimized detrend for a single time series
-/// 
+///
 /// Uses efficient linear regression with special value handling
 #[inline]
 fn detrend_timeseries(
@@ -128,7 +128,7 @@ fn detrend_timeseries(
 }
 
 /// Fast detrend for 3D array with chunked processing
-/// 
+///
 /// This version processes data in chunks for better cache locality
 /// Recommended for very large datasets
 #[pyfunction]
@@ -194,7 +194,7 @@ pub fn calc_detrend_spatial_3d_chunked<'py>(
 }
 
 /// Detrend with custom time dimension axis
-/// 
+///
 /// Supports different axis orderings: (time, lat, lon), (lat, lon, time), (lon, lat, time)
 #[pyfunction]
 #[pyo3(signature = (data, time_axis=0, min_valid_fraction=0.5))]
@@ -241,7 +241,7 @@ pub fn calc_detrend_spatial_flexible<'py>(
         .par_iter()
         .map(|&(i, j)| {
             let mut time_series = Vec::with_capacity(nt);
-            
+
             // Extract time series based on axis configuration
             for t in 0..nt {
                 let value = match time_axis {
@@ -282,9 +282,9 @@ mod tests {
         // Create simple linear trend
         let t_centered = vec![-2.0, -1.0, 0.0, 1.0, 2.0];
         let data = vec![1.0, 2.0, 3.0, 4.0, 5.0]; // Perfect linear trend
-        
+
         let result = detrend_timeseries(&data, &t_centered, 10.0, 0.5);
-        
+
         // After detrending, should be approximately zero (with floating point tolerance)
         for val in result.iter() {
             assert!(val.abs() < 1e-10);
@@ -295,9 +295,9 @@ mod tests {
     fn test_detrend_with_nan() {
         let t_centered = vec![-2.0, -1.0, 0.0, 1.0, 2.0];
         let data = vec![1.0, f64::NAN, 3.0, f64::NAN, 5.0];
-        
+
         let result = detrend_timeseries(&data, &t_centered, 10.0, 0.5);
-        
+
         // Check that NaN positions are preserved
         assert!(result[1].is_nan());
         assert!(result[3].is_nan());
@@ -308,9 +308,9 @@ mod tests {
     fn test_insufficient_valid_data() {
         let t_centered = vec![-2.0, -1.0, 0.0, 1.0, 2.0];
         let data = vec![f64::NAN, f64::NAN, f64::NAN, f64::NAN, 5.0];
-        
+
         let result = detrend_timeseries(&data, &t_centered, 10.0, 0.5);
-        
+
         // Should return all NaN when insufficient valid data
         assert!(result.iter().all(|x| x.is_nan()));
     }

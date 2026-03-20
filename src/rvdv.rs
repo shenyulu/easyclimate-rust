@@ -1,16 +1,12 @@
+use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use numpy::{PyArrayDyn, PyReadonlyArrayDyn};
 use pyo3::prelude::*;
 use rayon::prelude::*;
-use ndarray::{Array2};
 
 #[inline]
 fn is_missing(v: f64, xmsg: f64) -> bool {
-    if xmsg.is_nan() {
-        v.is_nan()
-    } else {
-        v == xmsg
-    }
+    if xmsg.is_nan() { v.is_nan() } else { v == xmsg }
 }
 
 #[inline]
@@ -73,8 +69,10 @@ fn dlnextrp_corners(x: &mut Array2<f64>, xmsg: f64) {
             let a2 = x[(2, 0)];
             let b1 = x[(0, 1)];
             let b2 = x[(0, 2)];
-            if !is_missing(a1, xmsg) && !is_missing(a2, xmsg)
-                && !is_missing(b1, xmsg) && !is_missing(b2, xmsg)
+            if !is_missing(a1, xmsg)
+                && !is_missing(a2, xmsg)
+                && !is_missing(b1, xmsg)
+                && !is_missing(b2, xmsg)
             {
                 x[(nl, ml)] = (2.0 * a1 - a2 + 2.0 * b1 - b2) * 0.5;
             }
@@ -84,8 +82,10 @@ fn dlnextrp_corners(x: &mut Array2<f64>, xmsg: f64) {
             let a2 = x[(2, ml)];
             let b1 = x[(0, ml - 1)];
             let b2 = x[(0, ml - 2)];
-            if !is_missing(a1, xmsg) && !is_missing(a2, xmsg)
-                && !is_missing(b1, xmsg) && !is_missing(b2, xmsg)
+            if !is_missing(a1, xmsg)
+                && !is_missing(a2, xmsg)
+                && !is_missing(b1, xmsg)
+                && !is_missing(b2, xmsg)
             {
                 x[(nl, ml)] = (2.0 * a1 - a2 + 2.0 * b1 - b2) * 0.5;
             }
@@ -95,8 +95,10 @@ fn dlnextrp_corners(x: &mut Array2<f64>, xmsg: f64) {
             let a2 = x[(nl - 2, 0)];
             let b1 = x[(nl, 1)];
             let b2 = x[(nl, 2)];
-            if !is_missing(a1, xmsg) && !is_missing(a2, xmsg)
-                && !is_missing(b1, xmsg) && !is_missing(b2, xmsg)
+            if !is_missing(a1, xmsg)
+                && !is_missing(a2, xmsg)
+                && !is_missing(b1, xmsg)
+                && !is_missing(b2, xmsg)
             {
                 x[(nl, ml)] = (2.0 * a1 - a2 + 2.0 * b1 - b2) * 0.5;
             }
@@ -106,8 +108,10 @@ fn dlnextrp_corners(x: &mut Array2<f64>, xmsg: f64) {
             let a2 = x[(nl - 2, ml)];
             let b1 = x[(nl, ml - 1)];
             let b2 = x[(nl, ml - 2)];
-            if !is_missing(a1, xmsg) && !is_missing(a2, xmsg)
-                && !is_missing(b1, xmsg) && !is_missing(b2, xmsg)
+            if !is_missing(a1, xmsg)
+                && !is_missing(a2, xmsg)
+                && !is_missing(b1, xmsg)
+                && !is_missing(b2, xmsg)
             {
                 x[(nl, ml)] = (2.0 * a1 - a2 + 2.0 * b1 - b2) * 0.5;
             }
@@ -116,8 +120,8 @@ fn dlnextrp_corners(x: &mut Array2<f64>, xmsg: f64) {
 }
 
 fn calc_dvrfidf_core(
-    u: &ndarray::ArrayView2<f64>,   // (nlat, mlon)
-    v: &ndarray::ArrayView2<f64>,   // (nlat, mlon)
+    u: &ndarray::ArrayView2<f64>, // (nlat, mlon)
+    v: &ndarray::ArrayView2<f64>, // (nlat, mlon)
     glat: &[f64],
     glon: &[f64],
     xmsg: f64,
@@ -205,16 +209,14 @@ fn calc_dvrfidf_core(
 
         // body: nl=2..nlat-1 (Fortran) => 1..nlat-2
         for nl in 1..(nlat - 1) {
-            let cond =
-                !is_missing(v[(nl, mlp1)], xmsg) &&
-                !is_missing(v[(nl, mlm1)], xmsg) &&
-                !is_missing(u[(nl + 1, ml)], xmsg) &&
-                !is_missing(u[(nl - 1, ml)], xmsg) &&
-                !is_missing(u[(nl, ml)], xmsg);
+            let cond = !is_missing(v[(nl, mlp1)], xmsg)
+                && !is_missing(v[(nl, mlm1)], xmsg)
+                && !is_missing(u[(nl + 1, ml)], xmsg)
+                && !is_missing(u[(nl - 1, ml)], xmsg)
+                && !is_missing(u[(nl, ml)], xmsg);
 
             if cond {
-                rv[(nl, ml)] =
-                    (v[(nl, mlp1)] - v[(nl, mlm1)]) * dx2[nl]
+                rv[(nl, ml)] = (v[(nl, mlp1)] - v[(nl, mlm1)]) * dx2[nl]
                     - (u[(nl + 1, ml)] - u[(nl - 1, ml)]) * dy2[nl]
                     + u[(nl, ml)] * tlatre[nl];
             }
@@ -223,28 +225,24 @@ fn calc_dvrfidf_core(
         if jopt >= 2 {
             // bottom (nl=1 => 0)
             let nl = 0usize;
-            let cond =
-                !is_missing(v[(nl, mlp1)], xmsg) &&
-                !is_missing(v[(nl, mlm1)], xmsg) &&
-                !is_missing(u[(nl + 1, ml)], xmsg) &&
-                !is_missing(u[(nl, ml)], xmsg);
+            let cond = !is_missing(v[(nl, mlp1)], xmsg)
+                && !is_missing(v[(nl, mlm1)], xmsg)
+                && !is_missing(u[(nl + 1, ml)], xmsg)
+                && !is_missing(u[(nl, ml)], xmsg);
             if cond {
-                rv[(nl, ml)] =
-                    (v[(nl, mlp1)] - v[(nl, mlm1)]) * dx2[nl]
+                rv[(nl, ml)] = (v[(nl, mlp1)] - v[(nl, mlm1)]) * dx2[nl]
                     - (u[(nl + 1, ml)] - u[(nl, ml)]) * dybot
                     + u[(nl, ml)] * tlatre[nl];
             }
 
             // top (nl=nlat => nlat-1)
             let nl = nlat - 1;
-            let cond =
-                !is_missing(v[(nl, mlp1)], xmsg) &&
-                !is_missing(v[(nl, mlm1)], xmsg) &&
-                !is_missing(u[(nl, ml)], xmsg) &&
-                !is_missing(u[(nl - 1, ml)], xmsg);
+            let cond = !is_missing(v[(nl, mlp1)], xmsg)
+                && !is_missing(v[(nl, mlm1)], xmsg)
+                && !is_missing(u[(nl, ml)], xmsg)
+                && !is_missing(u[(nl - 1, ml)], xmsg);
             if cond {
-                rv[(nl, ml)] =
-                    (v[(nl, mlp1)] - v[(nl, mlm1)]) * dx2[nl]
+                rv[(nl, ml)] = (v[(nl, mlp1)] - v[(nl, mlm1)]) * dx2[nl]
                     - (u[(nl, ml)] - u[(nl - 1, ml)]) * dytop
                     + u[(nl, ml)] * tlatre[nl];
             }
@@ -255,30 +253,26 @@ fn calc_dvrfidf_core(
     if jopt == 2 {
         for nl in 1..(nlat - 1) {
             // left ml=0
-            let cond =
-                !is_missing(v[(nl, 1)], xmsg) &&
-                !is_missing(v[(nl, 0)], xmsg) &&
-                !is_missing(u[(nl + 1, 0)], xmsg) &&
-                !is_missing(u[(nl - 1, 0)], xmsg) &&
-                !is_missing(u[(nl, 0)], xmsg);
+            let cond = !is_missing(v[(nl, 1)], xmsg)
+                && !is_missing(v[(nl, 0)], xmsg)
+                && !is_missing(u[(nl + 1, 0)], xmsg)
+                && !is_missing(u[(nl - 1, 0)], xmsg)
+                && !is_missing(u[(nl, 0)], xmsg);
             if cond {
-                rv[(nl, 0)] =
-                    (v[(nl, 1)] - v[(nl, 0)]) * dx[nl]
+                rv[(nl, 0)] = (v[(nl, 1)] - v[(nl, 0)]) * dx[nl]
                     - (u[(nl + 1, 0)] - u[(nl - 1, 0)]) * dy2[nl]
                     + u[(nl, 0)] * tlatre[nl];
             }
 
             // right ml=mlon-1
             let ml = mlon - 1;
-            let cond =
-                !is_missing(v[(nl, ml)], xmsg) &&
-                !is_missing(v[(nl, ml - 1)], xmsg) &&
-                !is_missing(u[(nl + 1, ml)], xmsg) &&
-                !is_missing(u[(nl - 1, ml)], xmsg) &&
-                !is_missing(u[(nl, ml)], xmsg);
+            let cond = !is_missing(v[(nl, ml)], xmsg)
+                && !is_missing(v[(nl, ml - 1)], xmsg)
+                && !is_missing(u[(nl + 1, ml)], xmsg)
+                && !is_missing(u[(nl - 1, ml)], xmsg)
+                && !is_missing(u[(nl, ml)], xmsg);
             if cond {
-                rv[(nl, ml)] =
-                    (v[(nl, ml)] - v[(nl, ml - 1)]) * dx[nl]
+                rv[(nl, ml)] = (v[(nl, ml)] - v[(nl, ml - 1)]) * dx[nl]
                     - (u[(nl + 1, ml)] - u[(nl - 1, ml)]) * dy2[nl]
                     + u[(nl, ml)] * tlatre[nl];
             }
@@ -302,8 +296,8 @@ fn calc_dvrfidf_core(
 }
 
 fn calc_ddvfidf_core(
-    u: &ndarray::ArrayView2<f64>,   // (nlat, mlon)
-    v: &ndarray::ArrayView2<f64>,   // (nlat, mlon)
+    u: &ndarray::ArrayView2<f64>, // (nlat, mlon)
+    v: &ndarray::ArrayView2<f64>, // (nlat, mlon)
     glat: &[f64],
     glon: &[f64],
     xmsg: f64,
@@ -382,15 +376,13 @@ fn calc_ddvfidf_core(
         let mlp1 = if ml == mlon - 1 { 0 } else { ml + 1 };
 
         for nl in 1..(nlat - 1) {
-            let cond =
-                !is_missing(v[(nl + 1, ml)], xmsg) &&
-                !is_missing(v[(nl - 1, ml)], xmsg) &&
-                !is_missing(u[(nl, mlp1)], xmsg) &&
-                !is_missing(u[(nl, mlm1)], xmsg) &&
-                !is_missing(v[(nl, ml)], xmsg);
+            let cond = !is_missing(v[(nl + 1, ml)], xmsg)
+                && !is_missing(v[(nl - 1, ml)], xmsg)
+                && !is_missing(u[(nl, mlp1)], xmsg)
+                && !is_missing(u[(nl, mlm1)], xmsg)
+                && !is_missing(v[(nl, ml)], xmsg);
             if cond {
-                dv[(nl, ml)] =
-                    (v[(nl + 1, ml)] - v[(nl - 1, ml)]) * dy2[nl]
+                dv[(nl, ml)] = (v[(nl + 1, ml)] - v[(nl - 1, ml)]) * dy2[nl]
                     + (u[(nl, mlp1)] - u[(nl, mlm1)]) * dx2[nl]
                     - v[(nl, ml)] * tlatre[nl];
             }
@@ -398,28 +390,24 @@ fn calc_ddvfidf_core(
 
         if jopt >= 2 {
             // bottom nl=0
-            let cond =
-                !is_missing(v[(1, ml)], xmsg) &&
-                !is_missing(v[(0, ml)], xmsg) &&
-                !is_missing(u[(0, mlp1)], xmsg) &&
-                !is_missing(u[(0, mlm1)], xmsg);
+            let cond = !is_missing(v[(1, ml)], xmsg)
+                && !is_missing(v[(0, ml)], xmsg)
+                && !is_missing(u[(0, mlp1)], xmsg)
+                && !is_missing(u[(0, mlm1)], xmsg);
             if cond {
-                dv[(0, ml)] =
-                    (v[(1, ml)] - v[(0, ml)]) * dybot
+                dv[(0, ml)] = (v[(1, ml)] - v[(0, ml)]) * dybot
                     + (u[(0, mlp1)] - u[(0, mlm1)]) * dx2[0]
                     - v[(0, ml)] * tlatre[0];
             }
 
             // top nl=nlat-1
             let nl = nlat - 1;
-            let cond =
-                !is_missing(v[(nl, ml)], xmsg) &&
-                !is_missing(v[(nl - 1, ml)], xmsg) &&
-                !is_missing(u[(nl, mlp1)], xmsg) &&
-                !is_missing(u[(nl, mlm1)], xmsg);
+            let cond = !is_missing(v[(nl, ml)], xmsg)
+                && !is_missing(v[(nl - 1, ml)], xmsg)
+                && !is_missing(u[(nl, mlp1)], xmsg)
+                && !is_missing(u[(nl, mlm1)], xmsg);
             if cond {
-                dv[(nl, ml)] =
-                    (v[(nl, ml)] - v[(nl - 1, ml)]) * dytop
+                dv[(nl, ml)] = (v[(nl, ml)] - v[(nl - 1, ml)]) * dytop
                     + (u[(nl, mlp1)] - u[(nl, mlm1)]) * dx2[nl]
                     - v[(nl, ml)] * tlatre[nl];
             }
@@ -429,30 +417,26 @@ fn calc_ddvfidf_core(
     if jopt == 2 {
         for nl in 1..(nlat - 1) {
             // left ml=0
-            let cond =
-                !is_missing(v[(nl + 1, 0)], xmsg) &&
-                !is_missing(v[(nl - 1, 0)], xmsg) &&
-                !is_missing(u[(nl, 1)], xmsg) &&
-                !is_missing(u[(nl, 0)], xmsg) &&
-                !is_missing(v[(nl, 0)], xmsg);
+            let cond = !is_missing(v[(nl + 1, 0)], xmsg)
+                && !is_missing(v[(nl - 1, 0)], xmsg)
+                && !is_missing(u[(nl, 1)], xmsg)
+                && !is_missing(u[(nl, 0)], xmsg)
+                && !is_missing(v[(nl, 0)], xmsg);
             if cond {
-                dv[(nl, 0)] =
-                    (v[(nl + 1, 0)] - v[(nl - 1, 0)]) * dy2[nl]
+                dv[(nl, 0)] = (v[(nl + 1, 0)] - v[(nl - 1, 0)]) * dy2[nl]
                     + (u[(nl, 1)] - u[(nl, 0)]) * dx[nl]
                     - v[(nl, 0)] * tlatre[nl];
             }
 
             // right ml=mlon-1
             let m = mlon - 1;
-            let cond =
-                !is_missing(v[(nl + 1, m)], xmsg) &&
-                !is_missing(v[(nl - 1, m)], xmsg) &&
-                !is_missing(u[(nl, m)], xmsg) &&
-                !is_missing(u[(nl, m - 1)], xmsg) &&
-                !is_missing(v[(nl, m)], xmsg);
+            let cond = !is_missing(v[(nl + 1, m)], xmsg)
+                && !is_missing(v[(nl - 1, m)], xmsg)
+                && !is_missing(u[(nl, m)], xmsg)
+                && !is_missing(u[(nl, m - 1)], xmsg)
+                && !is_missing(v[(nl, m)], xmsg);
             if cond {
-                dv[(nl, m)] =
-                    (v[(nl + 1, m)] - v[(nl - 1, m)]) * dy2[nl]
+                dv[(nl, m)] = (v[(nl + 1, m)] - v[(nl - 1, m)]) * dy2[nl]
                     + (u[(nl, m)] - u[(nl, m - 1)]) * dx[nl]
                     - v[(nl, m)] * tlatre[nl];
             }
@@ -487,18 +471,12 @@ pub fn dvrfidf(
     let u = u.as_array();
     let v = v.as_array();
     if u.dim() != v.dim() {
-        return Err(pyo3::exceptions::PyValueError::new_err("u and v must have the same shape (nlat, mlon)."));
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "u and v must have the same shape (nlat, mlon).",
+        ));
     }
     let xmsg = xmsg.unwrap_or(f64::NAN);
-    let (out, ier) = calc_dvrfidf_core(
-        &u,
-        &v,
-        glat.as_slice()?,
-        glon.as_slice()?,
-        xmsg,
-        iopt,
-        re,
-    );
+    let (out, ier) = calc_dvrfidf_core(&u, &v, glat.as_slice()?, glon.as_slice()?, xmsg, iopt, re);
     Ok((out.into_pyarray(py).to_owned().into(), ier))
 }
 
@@ -516,39 +494,37 @@ pub fn ddvfidf(
     let u = u.as_array();
     let v = v.as_array();
     if u.dim() != v.dim() {
-        return Err(pyo3::exceptions::PyValueError::new_err("u and v must have the same shape (nlat, mlon)."));
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "u and v must have the same shape (nlat, mlon).",
+        ));
     }
     let xmsg = xmsg.unwrap_or(f64::NAN);
-    let (out, ier) = calc_ddvfidf_core(
-        &u,
-        &v,
-        glat.as_slice()?,
-        glon.as_slice()?,
-        xmsg,
-        iopt,
-        re,
-    );
+    let (out, ier) = calc_ddvfidf_core(&u, &v, glat.as_slice()?, glon.as_slice()?, xmsg, iopt, re);
     Ok((out.into_pyarray(py).to_owned().into(), ier))
 }
 
 #[pyfunction]
 pub fn ddvfidf_batch(
     py: Python<'_>,
-    u: PyReadonlyArrayDyn<f64>,     // (..., nlat, mlon)
+    u: PyReadonlyArrayDyn<f64>, // (..., nlat, mlon)
     v: PyReadonlyArrayDyn<f64>,
-    glat: PyReadonlyArray1<f64>,    // (nlat,)
-    glon: PyReadonlyArray1<f64>,    // (mlon,)
+    glat: PyReadonlyArray1<f64>, // (nlat,)
+    glon: PyReadonlyArray1<f64>, // (mlon,)
     iopt: i32,
-    xmsg: f64,                      // 通常 np.nan
-    re: f64,                        // ✅ R 从 python 传入
+    xmsg: f64, // 通常 np.nan
+    re: f64,   // ✅ R 从 python 传入
 ) -> PyResult<(Py<PyArrayDyn<f64>>, i32)> {
     let u = u.as_array();
     let v = v.as_array();
     if u.shape() != v.shape() {
-        return Err(pyo3::exceptions::PyValueError::new_err("u and v must have the same shape"));
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "u and v must have the same shape",
+        ));
     }
     if u.ndim() < 2 {
-        return Err(pyo3::exceptions::PyValueError::new_err("u/v must have ndim>=2"));
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "u/v must have ndim>=2",
+        ));
     }
     let nlat = u.shape()[u.ndim() - 2];
     let mlon = u.shape()[u.ndim() - 1];
@@ -561,8 +537,16 @@ pub fn ddvfidf_batch(
     let stride = nlat * mlon;
 
     // 要求 C contiguous；如果不是，强制拷贝成 contiguous（避免 stride 坑）
-    let u_cow = if u.is_standard_layout() { None } else { Some(u.to_owned()) };
-    let v_cow = if v.is_standard_layout() { None } else { Some(v.to_owned()) };
+    let u_cow = if u.is_standard_layout() {
+        None
+    } else {
+        Some(u.to_owned())
+    };
+    let v_cow = if v.is_standard_layout() {
+        None
+    } else {
+        Some(v.to_owned())
+    };
 
     let u_data: &[f64] = match &u_cow {
         Some(a) => a.as_slice().unwrap(),
@@ -585,8 +569,10 @@ pub fn ddvfidf_batch(
             .enumerate()
             .map(|(b, out_chunk)| {
                 let s = b * stride;
-                let u_view = ndarray::ArrayView2::from_shape((nlat, mlon), &u_data[s..s + stride]).unwrap();
-                let v_view = ndarray::ArrayView2::from_shape((nlat, mlon), &v_data[s..s + stride]).unwrap();
+                let u_view =
+                    ndarray::ArrayView2::from_shape((nlat, mlon), &u_data[s..s + stride]).unwrap();
+                let v_view =
+                    ndarray::ArrayView2::from_shape((nlat, mlon), &v_data[s..s + stride]).unwrap();
 
                 let (res, ier) = calc_ddvfidf_core(&u_view, &v_view, glat, glon, xmsg, iopt, re);
 
@@ -620,10 +606,14 @@ pub fn dvrfidf_batch(
     let u = u.as_array();
     let v = v.as_array();
     if u.shape() != v.shape() {
-        return Err(pyo3::exceptions::PyValueError::new_err("u and v must have the same shape"));
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "u and v must have the same shape",
+        ));
     }
     if u.ndim() < 2 {
-        return Err(pyo3::exceptions::PyValueError::new_err("u/v must have ndim>=2"));
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "u/v must have ndim>=2",
+        ));
     }
     let nlat = u.shape()[u.ndim() - 2];
     let mlon = u.shape()[u.ndim() - 1];
@@ -636,8 +626,16 @@ pub fn dvrfidf_batch(
     let stride = nlat * mlon;
 
     // 要求 C contiguous；如果不是，强制拷贝成 contiguous（避免 stride 坑）
-    let u_cow = if u.is_standard_layout() { None } else { Some(u.to_owned()) };
-    let v_cow = if v.is_standard_layout() { None } else { Some(v.to_owned()) };
+    let u_cow = if u.is_standard_layout() {
+        None
+    } else {
+        Some(u.to_owned())
+    };
+    let v_cow = if v.is_standard_layout() {
+        None
+    } else {
+        Some(v.to_owned())
+    };
 
     let u_data: &[f64] = match &u_cow {
         Some(a) => a.as_slice().unwrap(),
@@ -660,8 +658,10 @@ pub fn dvrfidf_batch(
             .enumerate()
             .map(|(b, out_chunk)| {
                 let s = b * stride;
-                let u_view = ndarray::ArrayView2::from_shape((nlat, mlon), &u_data[s..s + stride]).unwrap();
-                let v_view = ndarray::ArrayView2::from_shape((nlat, mlon), &v_data[s..s + stride]).unwrap();
+                let u_view =
+                    ndarray::ArrayView2::from_shape((nlat, mlon), &u_data[s..s + stride]).unwrap();
+                let v_view =
+                    ndarray::ArrayView2::from_shape((nlat, mlon), &v_data[s..s + stride]).unwrap();
 
                 let (res, ier) = calc_dvrfidf_core(&u_view, &v_view, glat, glon, xmsg, iopt, re);
 

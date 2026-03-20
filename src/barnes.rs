@@ -86,7 +86,6 @@ fn normalize_values_inplace(val: &mut [f64]) -> f64 {
     offset
 }
 
-
 // --------------------------------------
 // kernel params
 // --------------------------------------
@@ -116,7 +115,8 @@ fn get_tail_value(sigma: &[f64], step: &[f64], num_iter: i32) -> Vec<f64> {
             let t_f = t as f64;
             let kernel_size = 2.0 * t_f + 1.0;
             let sigma_rect_sqr = (t_f + 1.0) * t_f / 3.0 * st * st;
-            0.5 * kernel_size * (sg * sg / ni - sigma_rect_sqr) / (((t_f + 1.0) * st).powi(2) - sg * sg / ni)
+            0.5 * kernel_size * (sg * sg / ni - sigma_rect_sqr)
+                / (((t_f + 1.0) * st).powi(2) - sg * sg / ni)
         })
         .collect()
 }
@@ -135,7 +135,13 @@ fn get_half_kernel_size(sigma: &[f64], step: &[f64], num_iter: i32) -> Vec<i32> 
 // 1D accumulate kernels (exact phases)
 // --------------------------------------
 
-fn accumulate_array(mut in_arr: Vec<f64>, mut h_arr: Vec<f64>, arr_len: usize, rect_len: usize, num_iter: usize) -> Vec<f64> {
+fn accumulate_array(
+    mut in_arr: Vec<f64>,
+    mut h_arr: Vec<f64>,
+    arr_len: usize,
+    rect_len: usize,
+    num_iter: usize,
+) -> Vec<f64> {
     // matches _accumulate_array :contentReference[oaicite:4]{index=4}
     let h0 = (rect_len - 1) / 2;
     let h1 = rect_len - h0;
@@ -240,7 +246,15 @@ fn idx3(z: usize, y: usize, x: usize, ny: usize, nx: usize) -> usize {
 // inject data (algorithm B.1)
 // --------------------------------------
 
-fn inject_data_1d(vg: &mut [f64], wg: &mut [f64], pts: &[(f64, f64, f64)], val: &[f64], x0: &[f64], step: &[f64], size: &[usize]) {
+fn inject_data_1d(
+    vg: &mut [f64],
+    wg: &mut [f64],
+    pts: &[(f64, f64, f64)],
+    val: &[f64],
+    x0: &[f64],
+    step: &[f64],
+    size: &[usize],
+) {
     let nx = size[0] as f64;
     for (k, &(px, _, _)) in pts.iter().enumerate() {
         let xc = (px - x0[0]) / step[0];
@@ -260,7 +274,15 @@ fn inject_data_1d(vg: &mut [f64], wg: &mut [f64], pts: &[(f64, f64, f64)], val: 
     }
 }
 
-fn inject_data_2d(vg: &mut [f64], wg: &mut [f64], pts: &[(f64, f64, f64)], val: &[f64], x0: &[f64], step: &[f64], size: &[usize]) {
+fn inject_data_2d(
+    vg: &mut [f64],
+    wg: &mut [f64],
+    pts: &[(f64, f64, f64)],
+    val: &[f64],
+    x0: &[f64],
+    step: &[f64],
+    size: &[usize],
+) {
     let nx = size[0] as f64;
     let ny = size[1] as f64;
     let nxu = size[0];
@@ -300,7 +322,15 @@ fn inject_data_2d(vg: &mut [f64], wg: &mut [f64], pts: &[(f64, f64, f64)], val: 
     }
 }
 
-fn inject_data_3d(vg: &mut [f64], wg: &mut [f64], pts: &[(f64, f64, f64)], val: &[f64], x0: &[f64], step: &[f64], size: &[usize]) {
+fn inject_data_3d(
+    vg: &mut [f64],
+    wg: &mut [f64],
+    pts: &[(f64, f64, f64)],
+    val: &[f64],
+    x0: &[f64],
+    step: &[f64],
+    size: &[usize],
+) {
     let nx = size[0] as f64;
     let ny = size[1] as f64;
     let nz = size[2] as f64;
@@ -346,15 +376,23 @@ fn inject_data_3d(vg: &mut [f64], wg: &mut [f64], pts: &[(f64, f64, f64)], val: 
 
         let vk = val[k];
 
-        vg[i000] += w000 * vk; wg[i000] += w000;
-        vg[i100] += w100 * vk; wg[i100] += w100;
-        vg[i110] += w110 * vk; wg[i110] += w110;
-        vg[i010] += w010 * vk; wg[i010] += w010;
+        vg[i000] += w000 * vk;
+        wg[i000] += w000;
+        vg[i100] += w100 * vk;
+        wg[i100] += w100;
+        vg[i110] += w110 * vk;
+        wg[i110] += w110;
+        vg[i010] += w010 * vk;
+        wg[i010] += w010;
 
-        vg[i001] += w001 * vk; wg[i001] += w001;
-        vg[i101] += w101 * vk; wg[i101] += w101;
-        vg[i111] += w111 * vk; wg[i111] += w111;
-        vg[i011] += w011 * vk; wg[i011] += w011;
+        vg[i001] += w001 * vk;
+        wg[i001] += w001;
+        vg[i101] += w101 * vk;
+        wg[i101] += w101;
+        vg[i111] += w111 * vk;
+        wg[i111] += w111;
+        vg[i011] += w011 * vk;
+        wg[i011] += w011;
     }
 }
 
@@ -370,27 +408,40 @@ fn threshold_weights(wg: &mut [f64], conv_scale_factor: f64) {
     }
 }
 
-fn product_conv_scale_factor_convolution(kernel_size: &[i32], sigma: &[f64], step: &[f64], num_iter: i32, max_dist_weight: f64) -> f64 {
+fn product_conv_scale_factor_convolution(
+    kernel_size: &[i32],
+    sigma: &[f64],
+    step: &[f64],
+    num_iter: i32,
+    max_dist_weight: f64,
+) -> f64 {
     // kernel_size**num_iter / sqrt(2*pi) / (sigma/step) then product, then * max_dist_weight
     // matches :contentReference[oaicite:6]{index=6} :contentReference[oaicite:7]{index=7}
     let ni = num_iter as i32;
     let mut p = 1.0;
     for m in 0..sigma.len() {
         let ks = kernel_size[m] as f64;
-        let term = ks.powi(ni) / ( (2.0 * PI).sqrt() ) / (sigma[m] / step[m]);
+        let term = ks.powi(ni) / ((2.0 * PI).sqrt()) / (sigma[m] / step[m]);
         p *= term;
     }
     p * max_dist_weight
 }
 
-fn product_conv_scale_factor_opt(kernel_size: &[i32], tail_value: &[f64], sigma: &[f64], step: &[f64], num_iter: i32, max_dist_weight: f64) -> f64 {
+fn product_conv_scale_factor_opt(
+    kernel_size: &[i32],
+    tail_value: &[f64],
+    sigma: &[f64],
+    step: &[f64],
+    num_iter: i32,
+    max_dist_weight: f64,
+) -> f64 {
     // (kernel_size + 2*tail_value)**num_iter / sqrt(2*pi) / (sigma/step) product * max_dist_weight
     // matches :contentReference[oaicite:8]{index=8} :contentReference[oaicite:9]{index=9}
     let ni = num_iter as i32;
     let mut p = 1.0;
     for m in 0..sigma.len() {
         let base = (kernel_size[m] as f64) + 2.0 * tail_value[m];
-        let term = base.powi(ni) / ( (2.0 * PI).sqrt() ) / (sigma[m] / step[m]);
+        let term = base.powi(ni) / ((2.0 * PI).sqrt()) / (sigma[m] / step[m]);
         p *= term;
     }
     p * max_dist_weight
@@ -448,7 +499,13 @@ fn interpolate_convolution(
         vg = v_new;
         wg = w_new;
 
-        let csf = product_conv_scale_factor_convolution(&kernel_size, sigma, step, num_iter, max_dist_weight);
+        let csf = product_conv_scale_factor_convolution(
+            &kernel_size,
+            sigma,
+            step,
+            num_iter,
+            max_dist_weight,
+        );
         threshold_weights(&mut wg, csf);
     } else if dim == 2 {
         let nx = size[0];
@@ -500,7 +557,13 @@ fn interpolate_convolution(
             }
         }
 
-        let csf = product_conv_scale_factor_convolution(&kernel_size, sigma, step, num_iter, max_dist_weight);
+        let csf = product_conv_scale_factor_convolution(
+            &kernel_size,
+            sigma,
+            step,
+            num_iter,
+            max_dist_weight,
+        );
         threshold_weights(&mut wg, csf);
     } else {
         let nx = size[0];
@@ -582,7 +645,13 @@ fn interpolate_convolution(
             }
         }
 
-        let csf = product_conv_scale_factor_convolution(&kernel_size, sigma, step, num_iter, max_dist_weight);
+        let csf = product_conv_scale_factor_convolution(
+            &kernel_size,
+            sigma,
+            step,
+            num_iter,
+            max_dist_weight,
+        );
         threshold_weights(&mut wg, csf);
     }
 
@@ -635,12 +704,33 @@ pub(crate) fn interpolate_opt_convolution(
         let rect_len = kernel_size[0] as usize;
         let h = vec![0.0; arr_len];
 
-        let v_new = accumulate_tail_array(vg.clone(), h.clone(), arr_len, rect_len, iters, tail_value[0]);
-        let w_new = accumulate_tail_array(wg.clone(), h.clone(), arr_len, rect_len, iters, tail_value[0]);
+        let v_new = accumulate_tail_array(
+            vg.clone(),
+            h.clone(),
+            arr_len,
+            rect_len,
+            iters,
+            tail_value[0],
+        );
+        let w_new = accumulate_tail_array(
+            wg.clone(),
+            h.clone(),
+            arr_len,
+            rect_len,
+            iters,
+            tail_value[0],
+        );
         vg = v_new;
         wg = w_new;
 
-        let csf = product_conv_scale_factor_opt(&kernel_size, &tail_value, sigma, step, num_iter, max_dist_weight);
+        let csf = product_conv_scale_factor_opt(
+            &kernel_size,
+            &tail_value,
+            sigma,
+            step,
+            num_iter,
+            max_dist_weight,
+        );
         threshold_weights(&mut wg, csf);
     } else if dim == 2 {
         let nx = size[0];
@@ -659,8 +749,10 @@ pub(crate) fn interpolate_opt_convolution(
                     row_v.push(vg[id]);
                     row_w.push(wg[id]);
                 }
-                let row_v2 = accumulate_tail_array(row_v, h.clone(), nx, rect_len, iters, tail_value[0]);
-                let row_w2 = accumulate_tail_array(row_w, h.clone(), nx, rect_len, iters, tail_value[0]);
+                let row_v2 =
+                    accumulate_tail_array(row_v, h.clone(), nx, rect_len, iters, tail_value[0]);
+                let row_w2 =
+                    accumulate_tail_array(row_w, h.clone(), nx, rect_len, iters, tail_value[0]);
                 for i in 0..nx {
                     let id = idx2(j, i, nx);
                     vg[id] = row_v2[i];
@@ -682,8 +774,10 @@ pub(crate) fn interpolate_opt_convolution(
                     col_v.push(vg[id]);
                     col_w.push(wg[id]);
                 }
-                let col_v2 = accumulate_tail_array(col_v, h.clone(), ny, rect_len, iters, tail_value[1]);
-                let col_w2 = accumulate_tail_array(col_w, h.clone(), ny, rect_len, iters, tail_value[1]);
+                let col_v2 =
+                    accumulate_tail_array(col_v, h.clone(), ny, rect_len, iters, tail_value[1]);
+                let col_w2 =
+                    accumulate_tail_array(col_w, h.clone(), ny, rect_len, iters, tail_value[1]);
                 for j in 0..ny {
                     let id = idx2(j, i, nx);
                     vg[id] = col_v2[j];
@@ -692,7 +786,14 @@ pub(crate) fn interpolate_opt_convolution(
             }
         }
 
-        let csf = product_conv_scale_factor_opt(&kernel_size, &tail_value, sigma, step, num_iter, max_dist_weight);
+        let csf = product_conv_scale_factor_opt(
+            &kernel_size,
+            &tail_value,
+            sigma,
+            step,
+            num_iter,
+            max_dist_weight,
+        );
         threshold_weights(&mut wg, csf);
     } else {
         let nx = size[0];
@@ -713,8 +814,22 @@ pub(crate) fn interpolate_opt_convolution(
                         line_v.push(vg[id]);
                         line_w.push(wg[id]);
                     }
-                    let v2 = accumulate_tail_array(line_v, h.clone(), nx, rect_len, iters, tail_value[0]);
-                    let w2 = accumulate_tail_array(line_w, h.clone(), nx, rect_len, iters, tail_value[0]);
+                    let v2 = accumulate_tail_array(
+                        line_v,
+                        h.clone(),
+                        nx,
+                        rect_len,
+                        iters,
+                        tail_value[0],
+                    );
+                    let w2 = accumulate_tail_array(
+                        line_w,
+                        h.clone(),
+                        nx,
+                        rect_len,
+                        iters,
+                        tail_value[0],
+                    );
                     for i in 0..nx {
                         let id = idx3(k, j, i, ny, nx);
                         vg[id] = v2[i];
@@ -738,8 +853,22 @@ pub(crate) fn interpolate_opt_convolution(
                         line_v.push(vg[id]);
                         line_w.push(wg[id]);
                     }
-                    let v2 = accumulate_tail_array(line_v, h.clone(), ny, rect_len, iters, tail_value[1]);
-                    let w2 = accumulate_tail_array(line_w, h.clone(), ny, rect_len, iters, tail_value[1]);
+                    let v2 = accumulate_tail_array(
+                        line_v,
+                        h.clone(),
+                        ny,
+                        rect_len,
+                        iters,
+                        tail_value[1],
+                    );
+                    let w2 = accumulate_tail_array(
+                        line_w,
+                        h.clone(),
+                        ny,
+                        rect_len,
+                        iters,
+                        tail_value[1],
+                    );
                     for j in 0..ny {
                         let id = idx3(k, j, i, ny, nx);
                         vg[id] = v2[j];
@@ -763,8 +892,22 @@ pub(crate) fn interpolate_opt_convolution(
                         line_v.push(vg[id]);
                         line_w.push(wg[id]);
                     }
-                    let v2 = accumulate_tail_array(line_v, h.clone(), nz, rect_len, iters, tail_value[2]);
-                    let w2 = accumulate_tail_array(line_w, h.clone(), nz, rect_len, iters, tail_value[2]);
+                    let v2 = accumulate_tail_array(
+                        line_v,
+                        h.clone(),
+                        nz,
+                        rect_len,
+                        iters,
+                        tail_value[2],
+                    );
+                    let w2 = accumulate_tail_array(
+                        line_w,
+                        h.clone(),
+                        nz,
+                        rect_len,
+                        iters,
+                        tail_value[2],
+                    );
                     for k in 0..nz {
                         let id = idx3(k, j, i, ny, nx);
                         vg[id] = v2[k];
@@ -774,7 +917,14 @@ pub(crate) fn interpolate_opt_convolution(
             }
         }
 
-        let csf = product_conv_scale_factor_opt(&kernel_size, &tail_value, sigma, step, num_iter, max_dist_weight);
+        let csf = product_conv_scale_factor_opt(
+            &kernel_size,
+            &tail_value,
+            sigma,
+            step,
+            num_iter,
+            max_dist_weight,
+        );
         threshold_weights(&mut wg, csf);
     }
 
@@ -818,7 +968,11 @@ fn interpolate_naive(
                 ws += w * val[k];
                 wt += w;
             }
-            out[i] = if wt > 0.0 { (ws / wt + offset) as f32 } else { f32::NAN };
+            out[i] = if wt > 0.0 {
+                (ws / wt + offset) as f32
+            } else {
+                f32::NAN
+            };
         }
     } else if dim == 2 {
         let nx = size[0];
@@ -835,7 +989,11 @@ fn interpolate_naive(
                     ws += w * val[k];
                     wt += w;
                 }
-                out[idx2(j, i, nx)] = if wt > 0.0 { (ws / wt + offset) as f32 } else { f32::NAN };
+                out[idx2(j, i, nx)] = if wt > 0.0 {
+                    (ws / wt + offset) as f32
+                } else {
+                    f32::NAN
+                };
             }
         }
     } else {
@@ -858,7 +1016,11 @@ fn interpolate_naive(
                         ws += w * val[n];
                         wt += w;
                     }
-                    out[idx3(k, j, i, ny, nx)] = if wt > 0.0 { (ws / wt + offset) as f32 } else { f32::NAN };
+                    out[idx3(k, j, i, ny, nx)] = if wt > 0.0 {
+                        (ws / wt + offset) as f32
+                    } else {
+                        f32::NAN
+                    };
                 }
             }
         }
@@ -1031,39 +1193,36 @@ fn interpolate_radius_2d(
     let mut out = vec![f32::NAN; ngrid];
 
     // Parallel fill by "row": out: out[j*nx .. (j+1)*nx]
-    out.par_chunks_mut(nx)
-        .enumerate()
-        .for_each(|(j, row)| {
-            let yc = x0[1] + (j as f64) * step[1];
+    out.par_chunks_mut(nx).enumerate().for_each(|(j, row)| {
+        let yc = x0[1] + (j as f64) * step[1];
 
-            // Each thread/reuse the neighbor buffer per line to avoid frequent allocation.
-            let mut neigh: Vec<(usize, f64)> = Vec::new();
+        // Each thread/reuse the neighbor buffer per line to avoid frequent allocation.
+        let mut neigh: Vec<(usize, f64)> = Vec::new();
 
-            for i in 0..nx {
-                let xc = x0[0] + (i as f64) * step[0];
+        for i in 0..nx {
+            let xc = x0[0] + (i as f64) * step[0];
 
-                kdtree.radius_search(xc, yc, radius_sqr, &mut neigh);
+            kdtree.radius_search(xc, yc, radius_sqr, &mut neigh);
 
-                let mut ws = 0.0_f64;
-                let mut wt = 0.0_f64;
+            let mut ws = 0.0_f64;
+            let mut wt = 0.0_f64;
 
-                for (k, d2) in neigh.iter().copied() {
-                    let w = (-d2 / scale).exp();
-                    ws += w * val[k];
-                    wt += w;
-                }
-
-                row[i] = if wt >= max_dist_weight {
-                    (ws / wt + offset) as f32
-                } else {
-                    f32::NAN
-                };
+            for (k, d2) in neigh.iter().copied() {
+                let w = (-d2 / scale).exp();
+                ws += w * val[k];
+                wt += w;
             }
-        });
+
+            row[i] = if wt >= max_dist_weight {
+                (ws / wt + offset) as f32
+            } else {
+                f32::NAN
+            };
+        }
+    });
 
     ArrayD::from_shape_vec(IxDyn(&rsize), out).unwrap()
 }
-
 
 // --------------------------------------
 // public PyO3 API: barnes
@@ -1093,12 +1252,14 @@ pub fn barnes<'py>(
             return Err(PyRuntimeError::new_err(format!(
                 "expected pts array of shape (N,M) or (N,), got ndim={}",
                 pts_arr.ndim()
-            )))
+            )));
         }
     };
 
     if dim < 1 || dim > 3 {
-        return Err(PyRuntimeError::new_err("Barnes interpolation supports only dimensions 1, 2 or 3"));
+        return Err(PyRuntimeError::new_err(
+            "Barnes interpolation supports only dimensions 1, 2 or 3",
+        ));
     }
 
     let nval = val.len()?; // 现在是 PyResult<usize>
@@ -1109,9 +1270,9 @@ pub fn barnes<'py>(
     }
 
     let sigma_v = py_to_vec_f64(sigma, dim, "sigma")?;
-    let x0_v    = py_to_vec_f64(x0,    dim, "x0")?;
-    let step_v  = py_to_vec_f64(step,  dim, "step")?;
-    let size_v  = py_to_size(size, dim)?;
+    let x0_v = py_to_vec_f64(x0, dim, "x0")?;
+    let step_v = py_to_vec_f64(step, dim, "step")?;
+    let size_v = py_to_size(size, dim)?;
 
     // Flatten pts into Vec<(x,y,z)>, fill missing dims with 0.0
     let mut pts_v: Vec<(f64, f64, f64)> = Vec::with_capacity(n);
@@ -1142,13 +1303,19 @@ pub fn barnes<'py>(
     let out_arr = match method {
         "optimized_convolution" => {
             // same kernel-size < grid checks as python (你也可以加回去更严格)
-            interpolate_opt_convolution(&pts_v, val_v, &sigma_v, &x0_v, &step_v, &size_v, num_iter, mdw)
+            interpolate_opt_convolution(
+                &pts_v, val_v, &sigma_v, &x0_v, &step_v, &size_v, num_iter, mdw,
+            )
         }
-        "convolution" => interpolate_convolution(&pts_v, val_v, &sigma_v, &x0_v, &step_v, &size_v, num_iter, mdw),
+        "convolution" => interpolate_convolution(
+            &pts_v, val_v, &sigma_v, &x0_v, &step_v, &size_v, num_iter, mdw,
+        ),
         "naive" => interpolate_naive(&pts_v, val_v, &sigma_v, &x0_v, &step_v, &size_v),
         "radius" => {
             if dim != 2 {
-                return Err(PyRuntimeError::new_err(format!("radius algorithm works only in 2D but data is {dim}D")));
+                return Err(PyRuntimeError::new_err(format!(
+                    "radius algorithm works only in 2D but data is {dim}D"
+                )));
             }
             if (sigma_v[0] - sigma_v[1]).abs() > 0.0 {
                 return Err(PyRuntimeError::new_err(format!(
@@ -1156,12 +1323,14 @@ pub fn barnes<'py>(
                     sigma_v
                 )));
             }
-            interpolate_radius_2d(&pts_v, val_v, sigma_v[0], &x0_v, &step_v, &size_v, mdw, min_weight)
+            interpolate_radius_2d(
+                &pts_v, val_v, sigma_v[0], &x0_v, &step_v, &size_v, mdw, min_weight,
+            )
         }
         _ => {
             return Err(PyRuntimeError::new_err(format!(
                 "encountered invalid Barnes interpolation method: {method}"
-            )))
+            )));
         }
     };
 
@@ -1174,10 +1343,10 @@ pub fn barnes<'py>(
 #[pyo3(signature = (pts, x0, step, size, radius))]
 pub fn radius_mask_2d<'py>(
     py: Python<'py>,
-    pts: PyReadonlyArrayDyn<f64>,   // (N,2) ideally; tolerate (N,>=2)
-    x0: PyReadonlyArrayDyn<f64>,    // (2,)
-    step: PyReadonlyArrayDyn<f64>,  // (2,) or scalar packed as len=1 (you can enforce (2,) if you want)
-    size: PyReadonlyArrayDyn<i64>,  // (2,) [nx, ny] like python wrapper uses
+    pts: PyReadonlyArrayDyn<f64>,  // (N,2) ideally; tolerate (N,>=2)
+    x0: PyReadonlyArrayDyn<f64>,   // (2,)
+    step: PyReadonlyArrayDyn<f64>, // (2,) or scalar packed as len=1 (you can enforce (2,) if you want)
+    size: PyReadonlyArrayDyn<i64>, // (2,) [nx, ny] like python wrapper uses
     radius: f64,
 ) -> PyResult<Py<PyArrayDyn<bool>>> {
     let pts_arr = pts.as_array();
@@ -1205,7 +1374,9 @@ pub fn radius_mask_2d<'py>(
 
     let sizev = size.as_array();
     if sizev.len() < 2 {
-        return Err(PyRuntimeError::new_err("size must have length >= 2 (nx, ny)"));
+        return Err(PyRuntimeError::new_err(
+            "size must have length >= 2 (nx, ny)",
+        ));
     }
     let nx = sizev[[0]] as usize;
     let ny = sizev[[1]] as usize;
@@ -1231,19 +1402,17 @@ pub fn radius_mask_2d<'py>(
     // output mask (ny, nx)
     let mut out = vec![false; nx * ny];
 
-    out.par_chunks_mut(nx)
-        .enumerate()
-        .for_each(|(j, row)| {
-            let yc = x0y + (j as f64) * sy;
+    out.par_chunks_mut(nx).enumerate().for_each(|(j, row)| {
+        let yc = x0y + (j as f64) * sy;
 
-            let mut neigh: Vec<(usize, f64)> = Vec::new();
+        let mut neigh: Vec<(usize, f64)> = Vec::new();
 
-            for i in 0..nx {
-                let xc = x0x + (i as f64) * sx;
-                kdtree.radius_search(xc, yc, radius_sqr, &mut neigh);
-                row[i] = !neigh.is_empty();
-            }
-        });
+        for i in 0..nx {
+            let xc = x0x + (i as f64) * sx;
+            kdtree.radius_search(xc, yc, radius_sqr, &mut neigh);
+            row[i] = !neigh.is_empty();
+        }
+    });
 
     let arr = ArrayD::from_shape_vec(IxDyn(&[ny, nx]), out)
         .map_err(|e| PyRuntimeError::new_err(format!("shape error: {e}")))?;

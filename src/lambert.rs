@@ -17,15 +17,21 @@ pub fn create_proj(center_lon: f64, center_lat: f64, lat1: f64, lat2: f64) -> La
 
     let n = if (lat1 - lat2).abs() > 0.0 {
         (lat1r.cos() / lat2r.cos()).ln()
-            / (((90.0 + lat2) * HALF_RAD_PER_DEG).tan() / ((90.0 + lat1) * HALF_RAD_PER_DEG).tan()).ln()
+            / (((90.0 + lat2) * HALF_RAD_PER_DEG).tan() / ((90.0 + lat1) * HALF_RAD_PER_DEG).tan())
+                .ln()
     } else {
         lat1r.sin()
     };
 
-    let f = lat1r.cos() * (( (90.0 + lat1) * HALF_RAD_PER_DEG).tan()).powf(n) / n;
+    let f = lat1r.cos() * (((90.0 + lat1) * HALF_RAD_PER_DEG).tan()).powf(n) / n;
     let rho0 = f / (((90.0 + center_lat) * HALF_RAD_PER_DEG).tan()).powf(n);
 
-    LambertProj { center_lon, n, f, rho0 }
+    LambertProj {
+        center_lon,
+        n,
+        f,
+        rho0,
+    }
 }
 
 /// lonlat(N,2) -> lambert(N,2)
@@ -72,14 +78,20 @@ pub fn infer_lambert_proj(
     } else if lat_max <= 0.0 {
         (-30.0, -60.0)
     } else {
-        return Err("optimized_convolution_S2 does not support domains crossing the equator".into());
+        return Err(
+            "optimized_convolution_S2 does not support domains crossing the equator".into(),
+        );
     };
 
     Ok(create_proj(center_lon, center_lat, std1, std2))
 }
 
 /// half kernel size opt (scalar) for margin estimation :contentReference[oaicite:16]{index=16}
-pub fn half_kernel_size_opt_scalar(sigma: f64, step: f64, num_iter: usize) -> Result<usize, String> {
+pub fn half_kernel_size_opt_scalar(
+    sigma: f64,
+    step: f64,
+    num_iter: usize,
+) -> Result<usize, String> {
     if sigma <= 0.0 || step <= 0.0 || num_iter == 0 {
         return Err("invalid sigma/step/num_iter".into());
     }
@@ -101,28 +113,36 @@ pub fn infer_lambert_grid(
     let lat0 = x0.1;
     let lat1 = x0.1 + (size.1 as f64 - 1.0) * step.1;
 
-    let corners = Array2::from_shape_vec(
-        (4, 2),
-        vec![
-            lon0, lat0,
-            lon0, lat1,
-            lon1, lat0,
-            lon1, lat1,
-        ],
-    ).unwrap();
+    let corners =
+        Array2::from_shape_vec((4, 2), vec![lon0, lat0, lon0, lat1, lon1, lat0, lon1, lat1])
+            .unwrap();
     let lam_corners = to_map_points(&corners.view(), proj);
 
-    let min_x = lam_corners.column(0).iter().fold(f64::INFINITY, |a, &b| a.min(b));
-    let max_x = lam_corners.column(0).iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
-    let min_y = lam_corners.column(1).iter().fold(f64::INFINITY, |a, &b| a.min(b));
-    let max_y = lam_corners.column(1).iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let min_x = lam_corners
+        .column(0)
+        .iter()
+        .fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_x = lam_corners
+        .column(0)
+        .iter()
+        .fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let min_y = lam_corners
+        .column(1)
+        .iter()
+        .fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_y = lam_corners
+        .column(1)
+        .iter()
+        .fold(f64::NEG_INFINITY, |a, &b| a.max(b));
 
     let margin_x = margin_steps as f64 * step.0;
     let margin_y = margin_steps as f64 * step.1;
 
     let lam_x0 = (min_x - margin_x, min_y - margin_y);
-    let lam_size_x = (((max_x - min_x + 2.0 * margin_x) / step.0).ceil() as isize + 2).max(2) as usize;
-    let lam_size_y = (((max_y - min_y + 2.0 * margin_y) / step.1).ceil() as isize + 2).max(2) as usize;
+    let lam_size_x =
+        (((max_x - min_x + 2.0 * margin_x) / step.0).ceil() as isize + 2).max(2) as usize;
+    let lam_size_y =
+        (((max_y - min_y + 2.0 * margin_y) / step.1).ceil() as isize + 2).max(2) as usize;
 
     Ok((lam_x0, (lam_size_x, lam_size_y)))
 }
@@ -171,11 +191,10 @@ pub fn resample_lambert_to_lonlat(
             let v11 = lam_field[(y0i + 1, x0i + 1)];
             let v01 = lam_field[(y0i + 1, x0i)];
 
-            out[(j, i)] =
-                (1.0 - xw) * (1.0 - yw) * v00 +
-                xw * (1.0 - yw) * v10 +
-                xw * yw * v11 +
-                (1.0 - xw) * yw * v01;
+            out[(j, i)] = (1.0 - xw) * (1.0 - yw) * v00
+                + xw * (1.0 - yw) * v10
+                + xw * yw * v11
+                + (1.0 - xw) * yw * v01;
         }
     }
 

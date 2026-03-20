@@ -1,6 +1,6 @@
 use ndarray::{Array2, ArrayView2};
-use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArray1, PyReadonlyArray2};
 use numpy::PyUntypedArrayMethods;
+use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
@@ -75,7 +75,7 @@ fn to_vec_len2_usize(name: &str, v: Vec<usize>) -> PyResult<[usize; 2]> {
 fn interpolate_naive_s2(
     pts: &ArrayView2<f64>, // (N,2) lon,lat
     mut val: Vec<f64>,
-    sigma: f64,            // scalar sigma (deg, in your call it's "grid-units" but still degrees metric on S2 wrapper)
+    sigma: f64, // scalar sigma (deg, in your call it's "grid-units" but still degrees metric on S2 wrapper)
     x0: (f64, f64),
     step: (f64, f64),
     size: (usize, usize), // (nx, ny)
@@ -91,32 +91,30 @@ fn interpolate_naive_s2(
     let mut out = vec![f32::NAN; nx * ny];
 
     // parallelize over rows
-    out.par_chunks_mut(nx)
-        .enumerate()
-        .for_each(|(j, row)| {
-            let yc = x0.1 + j as f64 * step.1;
-            for i in 0..nx {
-                let xc = x0.0 + i as f64 * step.0;
+    out.par_chunks_mut(nx).enumerate().for_each(|(j, row)| {
+        let yc = x0.1 + j as f64 * step.1;
+        for i in 0..nx {
+            let xc = x0.0 + i as f64 * step.0;
 
-                let mut wsum = 0.0f64;
-                let mut vsum = 0.0f64;
+            let mut wsum = 0.0f64;
+            let mut vsum = 0.0f64;
 
-                for k in 0..nobs {
-                    let lon = pts[(k, 0)];
-                    let lat = pts[(k, 1)];
-                    let d = dist_s2_deg(xc, yc, lon, lat);
-                    let w = (-(d * d) / scale).exp();
-                    wsum += w;
-                    vsum += w * val[k];
-                }
-
-                if wsum > 0.0 {
-                    row[i] = (vsum / wsum + offset) as f32;
-                } else {
-                    row[i] = f32::NAN;
-                }
+            for k in 0..nobs {
+                let lon = pts[(k, 0)];
+                let lat = pts[(k, 1)];
+                let d = dist_s2_deg(xc, yc, lon, lat);
+                let w = (-(d * d) / scale).exp();
+                wsum += w;
+                vsum += w * val[k];
             }
-        });
+
+            if wsum > 0.0 {
+                row[i] = (vsum / wsum + offset) as f32;
+            } else {
+                row[i] = f32::NAN;
+            }
+        }
+    });
 
     Array2::from_shape_vec((ny, nx), out).expect("shape")
 }
@@ -219,14 +217,7 @@ fn interpolate_opt_convol_s2(
     }
 
     // resample lambert -> lonlat
-    let out = lambert::resample_lambert_to_lonlat(
-        &lam_field.view(),
-        lam_x0,
-        x0,
-        step,
-        size,
-        &proj,
-    );
+    let out = lambert::resample_lambert_to_lonlat(&lam_field.view(), lam_x0, x0, step, size, &proj);
     Ok(out)
 }
 
@@ -301,31 +292,25 @@ pub fn barnes_s2<'py>(
     let sizet = (sizev[0], sizev[1]); // (nx, ny)
 
     let out2: Array2<f32> = match method {
-        "optimized_convolution_S2" => {
-            interpolate_opt_convol_s2(
-                &ptsv,
-                vv,
-                (sigv[0], sigv[1]),
-                x0t,
-                stept,
-                sizet,
-                num_iter,
-                max_dist,
-                resample,
-                lambert_proj,
-                lambert_grid,
-                auto_proj,
-            )?
-        }
+        "optimized_convolution_S2" => interpolate_opt_convol_s2(
+            &ptsv,
+            vv,
+            (sigv[0], sigv[1]),
+            x0t,
+            stept,
+            sizet,
+            num_iter,
+            max_dist,
+            resample,
+            lambert_proj,
+            lambert_grid,
+            auto_proj,
+        )?,
         "naive_S2" => {
             // naive assumes isotropic sigma
             interpolate_naive_s2(&ptsv, vv, sigv[0], x0t, stept, sizet)
         }
-        _ => {
-            return Err(PyRuntimeError::new_err(format!(
-                "invalid method: {method}"
-            )))
-        }
+        _ => return Err(PyRuntimeError::new_err(format!("invalid method: {method}"))),
     };
 
     Ok(out2.into_dyn().into_pyarray(py))
