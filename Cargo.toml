@@ -41,9 +41,3 @@ opt-level = 3
 
 [dev-dependencies]
 criterion = "0.5"
-
-# Optional: Benchmarks
-[[bench]]
-name = "detrend_bench"
-harness = false
-path = "benches/detrend_bench.rs"
