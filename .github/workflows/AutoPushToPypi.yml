@@ -4,8 +4,12 @@ on:
   release:
     types: [published]
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   BuildLinux:
+    name: Build Linux wheels
     runs-on: ubuntu-latest
 
     steps:
@@ -13,11 +17,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          architecture: 'x64'
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
 
       - name: Build manylinux wheels with Maturin
         run: |
@@ -29,7 +38,70 @@ jobs:
           name: dist-linux
           path: dist/
 
+  BuildMacOS:
+    name: Build macOS wheels (${{ matrix.runner }} / Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-13
+            python-version: '3.10'
+          - runner: macos-13
+            python-version: '3.11'
+          - runner: macos-13
+            python-version: '3.12'
+          - runner: macos-13
+            python-version: '3.13'
+          - runner: macos-13
+            python-version: '3.14'
+          - runner: macos-14
+            python-version: '3.10'
+          - runner: macos-14
+            python-version: '3.11'
+          - runner: macos-14
+            python-version: '3.12'
+          - runner: macos-14
+            python-version: '3.13'
+          - runner: macos-14
+            python-version: '3.14'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip maturin
+
+      - name: Build macOS wheel
+        run: python -m maturin build --release --interpreter python --out dist
+
+      - name: Verify built wheel
+        shell: bash
+        run: |
+          python -m pip install --force-reinstall "$(find dist -name '*.whl' | head -n 1)"
+          python -c "import easyclimate_rust; print('easyclimate_rust import ok')"
+
+      - name: Upload macOS build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos-${{ matrix.runner }}-py${{ matrix.python-version }}
+          path: dist/
+
   BuildWindows:
+    name: Build Windows wheels
     runs-on: windows-latest
 
     steps:
@@ -55,9 +127,11 @@ jobs:
           path: dist/
 
   Publish:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
     needs:
       - BuildLinux
+      - BuildMacOS
       - BuildWindows
     permissions:
       id-token: write
@@ -78,6 +152,13 @@ jobs:
           name: dist-windows
           path: dist/
 
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist-macos-*
+          path: dist/
+          merge-multiple: true
+
       - name: Publish to PyPI (Trusted Publishing)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -86,4 +167,6 @@ jobs:
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/**/*.whl
+          files: |
+            dist/**/*.whl
+            dist/**/*.tar.gz
