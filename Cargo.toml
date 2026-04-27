@@ -1,6 +1,6 @@
 [package]
 name = "easyclimate_rust"
-version = "2026.4.0"
+version = "2026.5.0"
 edition = "2024"
 
 [lib]
@@ -21,23 +21,8 @@ codegen-units = 1    # Better optimization, slower compile
 panic = "abort"         # Smaller binary size
 strip = true            # Strip symbols from binary
 
-# Enable CPU-specific optimizations
-# Uncomment the target that matches your deployment environment:
-
-# For maximum compatibility (default)
-# [profile.release]
-# No additional flags needed
-
-# For modern x86-64 CPUs (recommended for performance)
-[target.'cfg(target_arch = "x86_64")'.dependencies]
-
 [profile.release.package."*"]
 opt-level = 3
-
-# Optional: Add target-cpu optimization in .cargo/config.toml:
-# [build]
-# rustflags = ["-C", "target-cpu=native"]
-# This enables SIMD and other CPU-specific optimizations
 
 [dev-dependencies]
 criterion = "0.5"
