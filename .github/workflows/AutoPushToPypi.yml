@@ -39,42 +39,27 @@ jobs:
           path: dist/
 
   BuildMacOS:
-    name: Build macOS wheels (${{ matrix.runner }} / Python ${{ matrix.python-version }})
+    name: Build macOS wheels (${{ matrix.runner }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-13
-            python-version: '3.10'
-          - runner: macos-13
-            python-version: '3.11'
-          - runner: macos-13
-            python-version: '3.12'
-          - runner: macos-13
-            python-version: '3.13'
-          - runner: macos-13
-            python-version: '3.14'
-          - runner: macos-14
-            python-version: '3.10'
-          - runner: macos-14
-            python-version: '3.11'
-          - runner: macos-14
-            python-version: '3.12'
-          - runner: macos-14
-            python-version: '3.13'
-          - runner: macos-14
-            python-version: '3.14'
+          # Intel / x86_64
+          - runner: macos-15-intel
+            artifact-name: dist-macos-x86_64
+
+          # Apple Silicon / arm64
+          - runner: macos-15
+            artifact-name: dist-macos-arm64
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -82,22 +67,24 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Install build dependencies
-        run: python -m pip install --upgrade pip maturin
-
-      - name: Build macOS wheel
-        run: python -m maturin build --release --interpreter python --out dist
-
-      - name: Verify built wheel
+      - name: Build macOS wheels
         shell: bash
         run: |
-          python -m pip install --force-reinstall "$(find dist -name '*.whl' | head -n 1)"
-          python -c "import easyclimate_rust; print('easyclimate_rust import ok')"
+          bash ./scripts/build_macos_wheel.sh
+
+      - name: Verify built wheels
+        shell: bash
+        run: |
+          ls -lh dist/*.whl
+
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --force-reinstall "$(find dist -name '*cp312*.whl' | head -n 1)"
+          python3 -c "import easyclimate_rust; print('easyclimate_rust import ok')"
 
       - name: Upload macOS build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-macos-${{ matrix.runner }}-py${{ matrix.python-version }}
+          name: ${{ matrix.artifact-name }}
           path: dist/
 
   BuildWindows:
