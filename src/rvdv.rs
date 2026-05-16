@@ -392,7 +392,7 @@ fn calc_ddvfidf_core(
             // bottom nl=0
             let cond = !is_missing(v[(1, ml)], xmsg)
                 && !is_missing(v[(0, ml)], xmsg)
-                && !is_missing(u[(0, mlp1)], xmsg)
+                && !is_missing(u[(1, mlp1)], xmsg)
                 && !is_missing(u[(0, mlm1)], xmsg);
             if cond {
                 dv[(0, ml)] = (v[(1, ml)] - v[(0, ml)]) * dybot

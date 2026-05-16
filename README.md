@@ -39,6 +39,7 @@ pip install easyclimate-rust
 * **Python** ≥ 3.10
 * **NumPy** ≥ 1.24.3
   *(Required only at runtime for the prebuilt wheel)*
+* maturin
 
 ## 🔧 Build Instructions
 
